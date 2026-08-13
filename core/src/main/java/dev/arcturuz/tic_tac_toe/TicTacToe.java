@@ -1,6 +1,7 @@
 package dev.arcturuz.tic_tac_toe;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.badlogic.gdx.ApplicationListener;
@@ -8,6 +9,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
@@ -25,22 +28,47 @@ public class TicTacToe implements ApplicationListener {
     private Texture toeField;
     private Texture xPiece;
     private Texture circlePiece;
+    private Texture line;
 
     private Boolean XTime;
 
     private Map<Integer,String> pieces;
 
+    private Boolean gameOver;
+
+    private ShapeRenderer shapeRenderer;
+    private float lineX1;
+    private float lineY1;
+    private float lineX2;
+    private float lineY2;
+
     @Override
     public void create() {
         toeField = new Texture("field.png");
+        toeField.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
         xPiece = new Texture("x.png");
+        xPiece.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
         circlePiece = new Texture("circle.png");
+        circlePiece.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
+        line = new Texture("line.png");
+        line.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
         XTime = true;
+        gameOver = false;
 
         batch = new SpriteBatch();
         viewport = new FitViewport(8, 8);
         touchPos = new Vector2();
         pieces = new HashMap<>();
+
+        lineX1 = 0;
+        lineY1 = 0;
+        lineX2 = 0;
+        lineY2 = 0;
+        shapeRenderer = new ShapeRenderer();
     }
 
     @Override
@@ -56,7 +84,7 @@ public class TicTacToe implements ApplicationListener {
     }
 
     private void input() {
-        if (Gdx.input.isTouched()) {
+        if (Gdx.input.isTouched() && !gameOver) {
             touchPos.set(Gdx.input.getX(), Gdx.input.getY());
             viewport.unproject(touchPos);
             System.out.println("x: " + touchPos.x + ", y: " + touchPos.y);
@@ -94,6 +122,57 @@ public class TicTacToe implements ApplicationListener {
 
     private void logic() {
 
+        Map<Integer, String> pos = pieces;
+        if (pos.get(0) == pos.get(1) && pos.get(1) == pos.get(2) && pos.get(2) != null) {
+            lineX1 = 1;
+            lineX2 = 1;
+            lineY1 = 0;
+            lineY2 = 6;
+            gameOver = true;
+        } else if (pos.get(3) == pos.get(4) && pos.get(4) == pos.get(5) && pos.get(5) != null) {
+            lineX1 = 3;
+            lineX2 = 3;
+            lineY1 = 0;
+            lineY2 = 6;
+            gameOver = true;
+        } else if (pos.get(6) == pos.get(7) && pos.get(7) == pos.get(8) && pos.get(8) != null) {
+            lineX1 = 5;
+            lineX2 = 5;
+            lineY1 = 0;
+            lineY2 = 6;
+            gameOver = true;
+        } else if (pos.get(0) == pos.get(3) && pos.get(3) == pos.get(6) && pos.get(6) != null) {
+            lineX1 = 0;
+            lineX2 = 6;
+            lineY1 = 1;
+            lineY2 = 1;
+            gameOver = true;
+        } else if (pos.get(1) == pos.get(4) && pos.get(4) == pos.get(7) && pos.get(7) != null) {
+            lineX1 = 0;
+            lineX2 = 6;
+            lineY1 = 3;
+            lineY2 = 3;
+            gameOver = true;
+        } else if (pos.get(2) == pos.get(5) && pos.get(5) == pos.get(8) && pos.get(8) != null) {
+            lineX1 = 0;
+            lineX2 = 6;
+            lineY1 = 5;
+            lineY2 = 5;
+            gameOver = true;
+        } else if (pos.get(0) == pos.get(4) && pos.get(4) == pos.get(8) && pos.get(8) != null) {
+            lineX1 = 0;
+            lineX2 = 6;
+            lineY1 = 0;
+            lineY2 = 6;
+            gameOver = true;
+        } else if (pos.get(2) == pos.get(4) && pos.get(4) == pos.get(6) && pos.get(6) != null) {
+            lineX1 = 6;
+            lineX2 = 0;
+            lineY1 = 0;
+            lineY2 = 6;
+            gameOver = true;
+        }
+
     }
 
     private void draw() {
@@ -113,6 +192,14 @@ public class TicTacToe implements ApplicationListener {
         }
 
         batch.end();
+
+        if (gameOver) {
+            shapeRenderer.setProjectionMatrix(viewport.getCamera().combined);
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            shapeRenderer.setColor(Color.YELLOW);
+            shapeRenderer.rectLine(1 + lineX1, 1 + lineY1, 1 + lineX2, 1 + lineY2, .2f);
+            shapeRenderer.end();
+        }
     }
 
     @Override
